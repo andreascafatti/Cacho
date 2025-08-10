@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Cacho (Dudo) — Live Rooms</title>
 
-<!-- Firebase (compat for simpler code) -->
+<!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
@@ -16,8 +16,7 @@
   --ink:#eaf2fb; --muted:#93a7bc; --accent:#ffd166; --accent2:#76e2f4;
   --danger:#ff6b6b; --ok:#4ade80; --border:rgba(255,255,255,0.09);
 }
-*{box-sizing:border-box}
-html,body{height:100%}
+*{box-sizing:border-box} html,body{height:100%}
 body{
   margin:0;font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--ink);
   background:radial-gradient(1200px 800px at 120% -10%,#141b23,transparent),linear-gradient(#0c0f14,#0c0f14)
@@ -27,7 +26,7 @@ header{display:flex;gap:10px;align-items:center;justify-content:space-between;ma
 h1{font-size:20px;margin:0}
 .badge{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted)}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.btn{appearance:none;border:none;cursor:pointer;border-radius:12px;padding:9px 12px;background:#162033;color:var(--ink);border:1px solid var(--border);transition:.2s transform}
+.btn{appearance:none;border:none;cursor:pointer;border-radius:12px;padding:10px 14px;background:#162033;color:var(--ink);border:1px solid var(--border);transition:.2s transform}
 .btn:hover{transform:translateY(-1px)}
 .btn.primary{background:linear-gradient(180deg,#1c2d48,#152235);border-color:#22344f}
 .btn.accent{background:linear-gradient(180deg,#2b3c18,#15240f);border-color:#2f4516;box-shadow:inset 0 0 0 1px rgba(255,209,102,.25);color:#ffe9a8}
@@ -37,10 +36,22 @@ h1{font-size:20px;margin:0}
 .card{background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .panel{padding:14px}
 .stack{display:grid;grid-template-columns:1fr;gap:12px}
-input[type="text"],input[type="number"],select,textarea{
+input[type="text"],input[type="number"],select{
   width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);
   background:#0f1620;color:var(--ink);outline:none
 }
+
+/* Landing */
+#landing{min-height:65vh;display:flex;align-items:center;justify-content:center}
+.hero{
+  width:100%;padding:28px;border:1px solid var(--border);border-radius:20px;
+  background:radial-gradient(800px 500px at 30% -10%,rgba(118,226,244,.12),transparent),#0e1520;
+  text-align:center
+}
+.hero h2{font-size:34px;margin:0 0 6px 0}
+.hero p{color:var(--muted);margin-top:0}
+.hero .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.hero input{max-width:200px}
 
 /* Table */
 #tableWrap{position:relative;width:100%;aspect-ratio:1.6/1;min-height:460px}
@@ -82,7 +93,7 @@ input[type="text"],input[type="number"],select,textarea{
 .stepper button{padding:10px 12px;border:none;background:#0f1a2a;color:var(--ink);cursor:pointer}
 .stepper input{width:76px;text-align:center;border:none;background:#0f1622;color:var(--ink);padding:10px 0;font-weight:700}
 
-/* Face picker: large dice images w/ labels under */
+/* Face picker */
 .faces{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .facewrap{display:grid;grid-template-rows:auto auto;gap:6px;justify-items:center}
 .facebtn{
@@ -102,13 +113,6 @@ input[type="text"],input[type="number"],select,textarea{
 .chat .msg{padding:6px 10px;border-bottom:1px solid var(--border);font-size:14px}
 .chat .msg:last-child{border-bottom:none}
 
-/* Modals */
-.modal{position:fixed;inset:0;background:rgba(6,10,14,.65);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;padding:20px;z-index:80}
-.modal.open{display:flex}
-.sheet{width:min(720px,95vw);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.sheet .hd{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.sheet .bd{padding:16px}
-
 /* Settings panel */
 #settingsBtn{position:fixed;right:14px;top:14px;z-index:90}
 .settings{position:fixed;right:14px;top:56px;width:260px;border:1px solid var(--border);border-radius:12px;background:#0f1622;padding:12px;display:none;z-index:90}
@@ -116,10 +120,9 @@ input[type="text"],input[type="number"],select,textarea{
 .volrow{display:flex;align-items:center;gap:10px}
 .volrow input[type="range"]{flex:1}
 
-/* Peek overlay (uses animated cup directly on seat instead of curtain) */
+/* Misc */
 .dice-ring{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:48px}
 
-/* Mobile tweaks */
 @media (max-width: 720px){
   .seat{width:150px}
   .seat .cup{width:68px;height:68px}
@@ -130,21 +133,35 @@ input[type="text"],input[type="number"],select,textarea{
 </head>
 <body>
 <div class="wrap">
-  <header>
+
+  <!-- Landing -->
+  <section id="landing">
+    <div class="hero">
+      <h2>Buena cabros! Sale Cacho!</h2>
+      <p>Multiplayer Cacho (Dudo/Perudo) with a poker-style table. Create a room or join one.</p>
+      <div id="authNote" class="note">Connecting…</div>
+      <div class="actions">
+        <button class="btn primary" id="landingCreate" disabled>Create room</button>
+        <input id="landingCode" placeholder="Enter room code"/>
+        <button class="btn" id="landingJoin" disabled>Join room</button>
+      </div>
+      <div class="note" style="margin-top:8px">Tip: send your room link so friends join with one click.</div>
+    </div>
+  </section>
+
+  <!-- Top bar (visible in-game) -->
+  <header id="topbar" style="display:none">
     <div class="row">
       <h1>🎲 Cacho (Dudo) — Live Rooms</h1>
       <span class="badge">Firebase sync • Private dice • Poker table</span>
     </div>
     <div class="row">
-      <button class="btn" id="createBtn">Create room</button>
-      <input id="roomInput" placeholder="Room code" style="width:160px"/>
-      <button class="btn" id="joinBtn">Join room</button>
       <span class="badge">Room: <b id="roomCode">—</b></span>
       <button class="btn ghost" id="copyLinkBtn" style="display:none">Copy room link</button>
     </div>
   </header>
 
-  <!-- Nickname prompt (auto on join) -->
+  <!-- Nickname + table settings -->
   <section id="seatCard" class="card panel" style="display:none;margin-bottom:12px">
     <div class="row" style="justify-content:space-between">
       <div class="row">
@@ -162,15 +179,14 @@ input[type="text"],input[type="number"],select,textarea{
         <label style="min-width:120px">Switch rule</label>
         <select id="switchRule"><option value="perudo">Perudo</option><option value="simple">Simple</option></select>
         <button class="btn" id="applySettingsBtn">Apply (host)</button>
-        <button class="btn accent" id="startBtn">Start round (host)</button>
+        <button class="btn accent" id="startBtn">Start game (host)</button>
       </div>
     </div>
-    <div class="note" style="margin-top:8px">Only the <b>host</b> (room creator) can change rules or start rounds. Host badge shows under their nickname.</div>
+    <div class="note" id="startHint" style="margin-top:8px">Need at least 2 players to start.</div>
   </section>
 
-  <!-- Main stack -->
+  <!-- Game stack -->
   <section id="gameStack" class="stack" style="display:none">
-    <!-- Turn banner -->
     <div class="card panel">
       <div class="turn-banner">
         <div>
@@ -223,7 +239,7 @@ input[type="text"],input[type="number"],select,textarea{
 </div>
 
 <!-- Settings (gear) -->
-<button id="settingsBtn" class="btn">⚙️</button>
+<button id="settingsBtn" class="btn" style="display:none">⚙️</button>
 <div id="settingsPanel" class="settings">
   <div class="row" style="justify-content:space-between"><b>Settings</b> <button class="btn ghost" id="rulesBtn">Rules</button></div>
   <div class="divider" style="height:8px"></div>
@@ -236,12 +252,12 @@ input[type="text"],input[type="number"],select,textarea{
   <div class="sheet">
     <div class="hd"><div id="rulesHd">How to play Cacho (Dudo/Perudo)</div><button class="btn" id="closeRules">Close</button></div>
     <div class="bd">
-      <p>Players secretly roll dice, then bid on how many of a face exist across <i>all</i> dice. Next player must raise or call <b>Dudo</b>.</p>
+      <p>Players secretly roll dice, then bid how many of a face exist across <i>all</i> dice. Next player must raise or call <b>Dudo</b>.</p>
       <ul>
         <li><b>Aces wild (optional):</b> ⚀ counts toward any non-⚀ bid.</li>
         <li><b>Switch rule (Perudo):</b> To ⚀ requires ≥ ceil(q/2). From ⚀ requires ≥ 2×q. (Simple: raise like normal.)</li>
         <li><b>Dudo:</b> Reveal all dice. If bid holds (actual ≥ bid), challenger loses a die; otherwise bidder loses one.</li>
-        <li><b>Elimination:</b> Reach 0 dice → out. Last player with dice wins.</li>
+        <li><b>Elimination:</b> Reach 0 dice → out. <b>Loser of a die starts next round</b> (if eliminated, next alive seat starts).</li>
       </ul>
     </div>
   </div>
@@ -267,7 +283,7 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 const RAND = n => Math.floor(Math.random()*n);
 
-/* ====================== AUDIO (WebAudio) ====================== */
+/* ====================== AUDIO ====================== */
 const audio = { ctx:null, gain:null, vol:parseFloat(localStorage.getItem('cacho_vol')||'0.7'), muted:localStorage.getItem('cacho_muted')==='1' };
 function initAudio(){
   if(audio.ctx) return;
@@ -302,11 +318,14 @@ function playRattle(dur=0.5){
 }
 
 /* ====================== FIREBASE ====================== */
-let app, auth, db, user;
-firebase.initializeApp(firebaseConfig);
+let auth, db, user; firebase.initializeApp(firebaseConfig);
 auth=firebase.auth(); db=firebase.firestore();
-auth.signInAnonymously().then(()=>{ user=auth.currentUser; }).catch(console.error);
 
+let authReadyResolve;
+const authReady = new Promise(res=>authReadyResolve=res);
+auth.onAuthStateChanged(u=>{ user=u; if(authReadyResolve){authReadyResolve(); authReadyResolve=null;} });
+
+/* ====================== COLLECTION HELPERS ====================== */
 function roomRef(id){ return db.collection('cacho_live_rooms').doc(id); }
 function seatsRef(id){ return roomRef(id).collection('seats'); }
 function chatRef(id){ return roomRef(id).collection('chat'); }
@@ -334,33 +353,26 @@ function toast(msg){
   document.body.appendChild(b); setTimeout(()=>b.remove(),1800);
 }
 
-/* ====================== DICE PNG GENERATOR ====================== */
-/* We generate crisp dice faces with canvas, export to PNG data URLs, then use as <img src>. */
+/* ====================== DICE PNG (canvas-generated) ====================== */
 async function buildDicePNGs(){
   for(let face=1; face<=6; face++){
     const c=document.createElement('canvas'); c.width=256; c.height=256;
     const ctx=c.getContext('2d');
-    // background
     ctx.fillStyle='#ffffff'; ctx.strokeStyle='#c9c9c9';
     roundRect(ctx,16,16,224,224,34); ctx.fill(); ctx.lineWidth=6; ctx.stroke();
-    // pips
-    ctx.fillStyle='#111'; const r=18;
-    const pos = pipPositions(face);
+    ctx.fillStyle='#111';
+    const r=18, pos=pipPositions(face);
     pos.forEach(([x,y])=>{ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); });
     pngFaces[face]=c.toDataURL('image/png');
   }
 }
 function roundRect(ctx,x,y,w,h,r){ const rr=r;
   ctx.beginPath();
-  ctx.moveTo(x+rr,y);
-  ctx.arcTo(x+w,y,x+w,y+h,rr);
-  ctx.arcTo(x+w,y+h,x,y+h,rr);
-  ctx.arcTo(x,y+h,x,y,rr);
-  ctx.arcTo(x,y,x+w,y,rr);
-  ctx.closePath();
+  ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr); ctx.closePath();
 }
 function pipPositions(face){
-  // positions based on 256px canvas
   const G = 256/6;
   const spots = {
     1:[[3*G,3*G]],
@@ -373,6 +385,54 @@ function pipPositions(face){
   return spots[face];
 }
 
+/* ====================== LANDING FLOW ====================== */
+const landing = qs('#landing');
+const landingCreate = qs('#landingCreate');
+const landingJoin = qs('#landingJoin');
+const landingCode = qs('#landingCode');
+const authNote = qs('#authNote');
+
+authReady.then(()=>{
+  authNote.textContent='Ready';
+  landingCreate.disabled=false; landingJoin.disabled=false;
+}).catch(()=>{ authNote.textContent='Auth error — reload'; });
+
+landingCreate.onclick = async()=>{
+  await authReady;
+  initAudio();
+  // nickname prompt
+  let name = (localStorage.getItem('cacho_nick')||'').trim();
+  if(!name) name = prompt('Pick a nickname:')||'';
+  name = name.trim(); if(!name){ toast('Nickname required'); return; }
+  localStorage.setItem('cacho_nick', name);
+
+  await createRoom();
+  await ensureMySeat(name); // host gets a seat immediately
+  afterJoinOrCreateUI();
+};
+
+landingJoin.onclick = async()=>{
+  await authReady; initAudio();
+  const code = (landingCode.value||'').trim().toUpperCase();
+  if(!code){ toast('Enter a room code'); return; }
+  await joinRoom(code);
+  // nickname prompt
+  let name = (localStorage.getItem('cacho_nick')||'').trim();
+  if(!name) name = prompt('Pick a nickname:')||'';
+  name = name.trim(); if(!name){ toast('Nickname required'); return; }
+  localStorage.setItem('cacho_nick', name);
+  await ensureMySeat(name);
+  afterJoinOrCreateUI();
+};
+
+function afterJoinOrCreateUI(){
+  landing.style.display='none';
+  qs('#topbar').style.display='flex';
+  qs('#seatCard').style.display='block';
+  qs('#gameStack').style.display='grid';
+  qs('#settingsBtn').style.display='inline-block';
+}
+
 /* ====================== ROOM / JOIN / LINKS ====================== */
 function randCode(n=6){ const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<n;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
 function setRoomUI(){
@@ -380,28 +440,30 @@ function setRoomUI(){
   qs('#copyLinkBtn').style.display = roomId ? 'inline-block':'none';
 }
 async function createRoom(){
-  if(!user) { toast('Connecting… try again'); return; }
   roomId = randCode(); isHost=true; setRoomUI(); hostUid=user.uid;
   await roomRef(roomId).set({ createdAt:Date.now(), hostUid, settings: table.settings, started:false, startSeat:null, turnSeat:null, prevBid:null, history:[] });
   subscribeRoom();
   toast('Room created');
-  // auto-prompt nickname
-  qs('#seatCard').style.display='block';
 }
 async function joinRoom(id){
   roomId = id.trim().toUpperCase(); if(!roomId) return;
   isHost=false; setRoomUI();
   subscribeRoom();
-  qs('#seatCard').style.display='block';
   toast('Joined '+roomId);
 }
-function autoJoinFromURL(){
-  const m = location.search.match(/[?&]room=([A-Z0-9]+)/i) || location.hash.match(/room=([A-Z0-9]+)/i);
-  if(m){ joinRoom(m[1].toUpperCase()); }
+async function ensureMySeat(name){
+  const mine = (await seatsRef(roomId).where('uid','==',user.uid).limit(1).get());
+  if(!mine.empty){
+    const id=mine.docs[0].id;
+    await seatsRef(roomId).doc(id).set({ name }, { merge:true });
+    mySeatId=id; return;
+  }
+  const d = await seatsRef(roomId).add({ uid:user.uid, name, diceCount: table.settings.dicePerPlayer, eliminated:false });
+  mySeatId = d.id;
 }
 
+/* subscribe & chat */
 function subscribeRoom(){
-  qs('#gameStack').style.display='grid';
   unsubState && unsubState(); unsubSeats && unsubSeats(); unsubChat && unsubChat();
   unsubState = roomRef(roomId).onSnapshot(snap=>{
     const d=snap.data(); if(!d) return;
@@ -410,12 +472,14 @@ function subscribeRoom(){
     table.started = !!d.started; table.startSeat=d.startSeat||null; table.turnSeat=d.turnSeat||null; table.prevBid=d.prevBid||null; table.history=d.history||[];
     renderAll();
   });
-  unsubSeats = seatsRef(roomId).onSnapshot(async col=>{
+  unsubSeats = seatsRef(roomId).onSnapshot(col=>{
     seats = col.docs.map(doc=>({ id:doc.id, ...doc.data() }));
-    // If I have no seat yet, try to find seat with my uid
     const mine = seats.find(s=>s.uid===user?.uid);
     mySeatId = mine ? mine.id : mySeatId;
     renderAll();
+    // start button hint
+    const canStart = seats.filter(s=>!s.eliminated).length>=2;
+    qs('#startHint').textContent = canStart ? 'Ready to start.' : 'Need at least 2 players to start.';
   });
   unsubChat = chatRef(roomId).orderBy('t','asc').onSnapshot(col=>{
     const host=qs('#chatBox'); host.innerHTML='';
@@ -439,17 +503,16 @@ qs('#volSlider').oninput = (e)=>{ initAudio(); audio.vol=parseFloat(e.target.val
 qs('#muteBtn').onclick=()=>{ initAudio(); audio.muted=!audio.muted; if(audio.gain) audio.gain.gain.value = audio.muted?0:audio.vol; localStorage.setItem('cacho_muted', audio.muted?'1':'0'); qs('#muteBtn').textContent = audio.muted?'Unmute':'Mute'; };
 qs('#muteBtn').textContent = audio.muted?'Unmute':'Mute';
 
-/* ====================== CLAIM / SETTINGS / START ====================== */
-qs('#createBtn').onclick = createRoom;
-qs('#joinBtn').onclick = ()=>{ const code=qs('#roomInput').value||''; if(!code) return; joinRoom(code); };
+/* ====================== TOPBAR UTILS ====================== */
 qs('#copyLinkBtn').onclick = async()=>{
   const url = location.origin+location.pathname + '?room=' + roomId;
   try{ await navigator.clipboard.writeText(url); toast('Room link copied'); }catch(e){ prompt('Copy room link:', url); }
 };
+
+/* ====================== CLAIM / SETTINGS / START ====================== */
 qs('#claimBtn').onclick = async()=>{
   if(!roomId){ toast('Create or join a room first'); return; }
   const name = (qs('#seatName').value||'').trim(); if(!name){ toast('Enter a nickname'); return; }
-  // Upsert seat by uid
   const existing = seats.find(s=>s.uid===user?.uid);
   if(existing){
     await seatsRef(roomId).doc(existing.id).set({ name }, { merge:true });
@@ -457,12 +520,10 @@ qs('#claimBtn').onclick = async()=>{
   }else{
     const d = await seatsRef(roomId).add({ uid:user.uid, name, diceCount: table.settings.dicePerPlayer, eliminated:false });
     mySeatId = d.id;
-    // seed dice
-    const dice = Array.from({length:table.settings.dicePerPlayer}, ()=>1+RAND(6));
-    await seatsRef(roomId).doc(d.id).set({ dice }, { merge:true });
   }
   toast('Nickname saved');
 };
+
 qs('#applySettingsBtn').onclick = async()=>{
   if(user?.uid!==hostUid){ toast('Only host can change rules'); return; }
   table.settings.dicePerPlayer = clamp(parseInt(qs('#dicePerPlayer').value,10)||5,1,10);
@@ -472,19 +533,21 @@ qs('#applySettingsBtn').onclick = async()=>{
   await roomRef(roomId).set({ settings: table.settings }, { merge:true });
   toast('Settings updated');
 };
+
 qs('#startBtn').onclick = async()=>{
   if(user?.uid!==hostUid){ toast('Only host can start'); return; }
-  // reroll all players (not eliminated)
-  const col = await seatsRef(roomId).get();
-  let firstSeatId=null;
-  for(const d of col.docs){
+  const alive = (await seatsRef(roomId).where('eliminated','==',false).get()).docs;
+  if(alive.length<2){ toast('Need at least 2 players'); return; }
+  // roll dice for everyone
+  for(const d of alive){
     const data=d.data();
     const dice = Array.from({length:data.diceCount||table.settings.dicePerPlayer}, ()=>1+RAND(6));
-    await seatsRef(roomId).doc(d.id).set({ dice, eliminated:false, diceCount:data.diceCount||table.settings.dicePerPlayer, last:'' }, { merge:true });
-    if(!firstSeatId) firstSeatId=d.id;
+    await seatsRef(roomId).doc(d.id).set({ dice, last:'' }, { merge:true });
   }
+  // pick random starter
+  const firstSeatId = alive[Math.floor(Math.random()*alive.length)].id;
   await roomRef(roomId).set({ started:true, startSeat:firstSeatId, turnSeat:firstSeatId, prevBid:null, history:[] }, { merge:true });
-  toast('Round started');
+  toast('Game started');
 };
 
 /* ====================== BIDDING ====================== */
@@ -509,9 +572,11 @@ function nextAliveSeat(fromId){
   }
   return fromId;
 }
+
 qs('#qtyMinus').onclick=()=>{ const i=qs('#qtyInput'); i.value=Math.max(1,(parseInt(i.value,10)||1)-1); updateFaceLabels(); };
 qs('#qtyPlus').onclick=()=>{ const i=qs('#qtyInput'); const max=totalDiceAlive()||1; i.value=Math.min(max,(parseInt(i.value,10)||1)+1); updateFaceLabels(); };
 qs('#qtyInput').addEventListener('input',updateFaceLabels);
+
 qs('#placeBidBtn').onclick=async()=>{
   if(!roomId){ toast('Join or create a room'); return; }
   if(!mySeatId){ toast('Claim a nickname'); return; }
@@ -526,17 +591,21 @@ qs('#placeBidBtn').onclick=async()=>{
   await roomRef(roomId).set({ prevBid: { qty, face, by: mySeatId, byName: me?.name }, turnSeat: nextSeatId, history: hist }, { merge:true });
   await seatsRef(roomId).doc(mySeatId).set({ last:`Bid ${qty} ${labelFor(face, qty)}` }, { merge:true });
 };
+
 qs('#dudoBtn').onclick=async()=>{
   if(!roomId){ toast('Join or create a room'); return; }
   if(!mySeatId){ toast('Claim a nickname'); return; }
   if(table.turnSeat !== mySeatId){ toast('Not your turn'); return; }
   if(!table.prevBid){ toast('No bid to doubt'); return; }
+
+  // tally dice
   const face = table.prevBid.face;
   const aces=table.settings.acesWild;
-  const col=await seatsRef(roomId).get(); let total=0;
+  const col=await seatsRef(roomId).get(); let total=0, aliveDocs=[];
   for(const d of col.docs){
     const sd=d.data();
     if(sd.eliminated) continue;
+    aliveDocs.push(d);
     const dice = sd.dice || [];
     for(const pip of dice){
       if(pip===face) total++; else if(aces && face!==1 && pip===1) total++;
@@ -545,20 +614,22 @@ qs('#dudoBtn').onclick=async()=>{
   const bidderId = table.prevBid.by;
   const holds = total >= table.prevBid.qty;
   const loserId = holds ? mySeatId : bidderId;
+
   // remove a die
   const loserSnap = await seatsRef(roomId).doc(loserId).get();
   const loser = loserSnap.data();
   const newCount = Math.max(0, (loser.diceCount||5) - 1);
   const eliminated = newCount===0;
   await seatsRef(roomId).doc(loserId).set({ diceCount:newCount, eliminated }, { merge:true });
+
   // reroll all survivors
-  const col2=await seatsRef(roomId).get();
-  for(const d of col2.docs){
-    const sd=d.data(); if(sd.eliminated) continue;
-    const dice = Array.from({length:sd.diceCount||0}, ()=>1+RAND(6));
+  for(const d of aliveDocs){
+    const sd=d.data(); if(sd.eliminated || d.id===loserId && eliminated) continue;
+    const dice = Array.from({length:sd.diceCount||(d.id===loserId?newCount:sd.diceCount)||0}, ()=>1+RAND(6));
     await seatsRef(roomId).doc(d.id).set({ dice }, { merge:true });
   }
-  // compute next start
+
+  // next round starter = loser (or next alive if eliminated)
   const nextStart = eliminated ? nextAliveSeat(loserId) : loserId;
   const aliveCount = (await seatsRef(roomId).where('eliminated','==',false).get()).size;
   let newState={ prevBid:null, turnSeat: nextStart, startSeat: nextStart };
@@ -617,7 +688,7 @@ function updateFaceLabels(){
   qsa('.facelabel').forEach(l=>{ const f=parseInt(l.getAttribute('data-lab'),10); l.textContent = labelFor(f,q); });
 }
 
-/* ====================== RENDERING (Table, seats, bid, history) ====================== */
+/* ====================== RENDERING ====================== */
 function renderAll(){
   renderSeats();
   renderTurn();
@@ -637,14 +708,13 @@ function renderSeats(){
     const seat=document.createElement('div'); seat.className='seat'+(p.eliminated?' eliminated':''); seat.style.left=x+'%'; seat.style.top=y+'%';
     seat.innerHTML=`
       <div class="dealer-btn" style="display:${p.id===table.startSeat?'inline-block':'none'}">BTN</div>
-      <div class="name">${p.name||'—'} ${p.uid===hostUid?'<span class="badge">Host</span>':''} ${renderKickButton(p)}</div>
+      <div class="name">${p.name||'—'} ${renderKickButton(p)}</div>
       <div class="cup" data-seat="${p.id}" title="Click to peek your dice">🍶</div>
       <div class="dice-ring" id="ring-${p.id}"></div>
       <div class="sub" id="sub-${p.id}">${p.last||''}</div>
     `;
     host.appendChild(seat);
   }
-  // wire cups and kicks
   qsa('.seat .cup', host).forEach(c=>{ c.onclick=()=>onCupClick(c.dataset.seat); });
   qsa('.btn-kick', host).forEach(b=>{ b.onclick=()=>handleKick(b.dataset.id); });
 }
@@ -654,9 +724,7 @@ function renderTurn(){
   const me = mySeat();
   qs('#dudoBtn').disabled = !table.prevBid || !(me && me.id===table.turnSeat);
 }
-function renderBidUI(){
-  renderFacePicker(); updateFaceLabels();
-}
+function renderBidUI(){ renderFacePicker(); updateFaceLabels(); }
 function renderHistory(){
   const h=qs('#history');
   if(!table.history || table.history.length===0){ h.innerHTML='<div class="rowh"><span class="note">No bids yet</span></div>'; return; }
@@ -686,7 +754,7 @@ function renderCurrentBid(){
   qs('#minNextNote').textContent=minNextBidText();
 }
 
-/* ====================== CUP / DICE REVEAL (with animation & ring layout) ====================== */
+/* ====================== CUP / DICE REVEAL ====================== */
 async function onCupClick(seatId){
   const seat = seatById(seatId); if(!seat) return;
   if(seat.uid!==user?.uid){ toast('You can only peek your own dice'); return; }
@@ -698,35 +766,28 @@ async function onCupClick(seatId){
   // Animate lift
   seatEl.classList.add('lift'); playClick(380, 0.08); playRattle(0.45);
 
-  // Rolling animation: cycle fake faces while fetching real dice
-  ringEl.innerHTML=''; const n = seat.diceCount||0;
+  // Rolling animation
+  ringEl.innerHTML='';
+  const n = seat.diceCount||0;
   const imgs = [];
   for(let i=0;i<n;i++){
     const img=document.createElement('img'); img.style.width='44px'; img.style.height='44px'; img.style.borderRadius='8px'; img.style.boxShadow='0 2px 6px rgba(0,0,0,.35)';
     img.src = pngFaces[1]; imgs.push(img); ringEl.appendChild(img);
   }
   const tStart=performance.now();
-  const rollAnim = setInterval(()=>{
-    imgs.forEach(img=>{ img.src = pngFaces[1+RAND(6)]; });
-  }, 80);
+  const rollAnim = setInterval(()=>{ imgs.forEach(img=>{ img.src = pngFaces[1+RAND(6)]; }); }, 80);
 
-  // Load actual dice from Firestore (owner can read their own dice directly)
+  // Load actual dice
   const doc = await seatsRef(roomId).doc(seatId).get();
   const real = (doc.data()||{}).dice || [];
-  const elapsed = performance.now() - tStart;
-  const waitMore = Math.max(0, 900 - elapsed); // ensure ~0.9s roll
-  await sleep(waitMore);
-  clearInterval(rollAnim);
-
-  // Reveal actual pips
+  const elapsed = performance.now() - tStart; const waitMore = Math.max(0, 900 - elapsed);
+  await sleep(waitMore); clearInterval(rollAnim);
   imgs.forEach((img,idx)=>{ img.src = pngFaces[real[idx]||1]; });
 
-  // Second click to drop cup
+  // Drop cup on second click
   seatEl.onclick = async()=>{
-    // drop cup
     playClick(160,0.06);
     seatEl.classList.remove('lift');
-    // restore original handler after drop completes
     await sleep(450);
     seatEl.onclick = ()=>onCupClick(seatId);
   };
@@ -737,14 +798,17 @@ async function onCupClick(seatId){
   await buildDicePNGs();
   renderFacePicker(); updateFaceLabels();
 
-  // Auto volume label + init
-  if(audio.muted && audio.gain) audio.gain.gain.value=0;
-
-  // Auto-join by URL
-  autoJoinFromURL();
-
-  // If no room yet, show stack anyway so user can create room
-  qs('#gameStack').style.display='grid';
+  // Auto-join via URL (?room=CODE or #room=CODE)
+  const m = location.search.match(/[?&]room=([A-Z0-9]+)/i) || location.hash.match(/room=([A-Z0-9]+)/i);
+  if(m){
+    await authReady;
+    await joinRoom(m[1].toUpperCase());
+    // nickname prompt
+    let name = (localStorage.getItem('cacho_nick')||'').trim();
+    if(!name) name = prompt('Pick a nickname:')||'';
+    name = name.trim();
+    if(name){ localStorage.setItem('cacho_nick', name); await ensureMySeat(name); afterJoinOrCreateUI(); }
+  }
 })();
 </script>
 
@@ -759,13 +823,12 @@ service cloud.firestore {
                    && request.resource.data.keys().hasOnly(['createdAt','hostUid','settings','started','startSeat','turnSeat','prevBid','history'])
                    && (request.auth.uid == resource.data.hostUid);
       match /seats/{seatId} {
-        allow read: if true; // everyone sees names/diceCount/eliminated; client fetches dice only for its own uid
-        allow write: if request.auth != null
-                     && ((request.resource.data.uid == request.auth.uid));
+        allow read: if true;
+        allow write: if request.auth != null && (request.resource.data.uid == request.auth.uid);
       }
       match /chat/{msgId} {
         allow read: if true;
-        allow write: if request.auth != null; // optional tighten: require seat membership
+        allow write: if request.auth != null;
       }
     }
   }
