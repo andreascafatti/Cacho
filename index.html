@@ -404,20 +404,25 @@ landingCreate.onclick = async () => {
   }catch(e){ console.error(e); toast('Could not create room. Try again.'); }
 };
 
-landingJoin.onclick = async()=>{
+landingJoin.onclick = async () => {
   await authReady; initAudio();
-  const code = (landingCode.value||'').trim().toUpperCase();
-  if(!code){ toast('Enter a room code'); return; }
-  try{
-    await joinRoom(code);
-    let name = (localStorage.getItem('cacho_nick')||'').trim();
-    if(!name) name = prompt('Pick a nickname:')||'';
-    name = name.trim(); if(!name){ toast('Nickname required'); return; }
+  const code = (landingCode.value || '').trim().toUpperCase();
+  if (!code) { toast('Enter a room code'); return; }
+
+  try {
+    await window.joinRoom(code);
+    let name = (localStorage.getItem('cacho_nick') || '').trim();
+    if (!name) name = prompt('Pick a nickname:') || '';
+    name = name.trim(); if (!name) { toast('Nickname required'); return; }
     localStorage.setItem('cacho_nick', name);
+
     await ensureMySeat(name);
     enterGameUI();
     setRoomUI();
-  }catch(e){ console.error(e); toast('Could not join. Check the code.'); }
+  } catch (e) {
+    console.error(e);
+    toast('Could not join. Check the code.');
+  }
 };
 
 function enterGameUI(){
@@ -432,7 +437,20 @@ function enterGameUI(){
 function randCode(n=6){ const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<n;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
 function setRoomUI(){
   qs('#roomCode').textContent = roomId || '—';
-  qs('#copyLinkBtn').style.display = roomId ? 'inline-block':'none';
+  qs('#copyLinkBtn').onclick = async () => {
+  if (!roomId) { toast('Create or join a room first'); return; }
+  const url = location.origin + location.pathname + '?room=' + roomId;
+
+  try {
+    // GitHub Pages is https, so this should work; still keep a fallback
+    await navigator.clipboard.writeText(url);
+    toast('Room link copied');
+  } catch (e) {
+    // Fallback prompt if clipboard permission is denied
+    const _ = prompt('Copy this room link:', url);
+    if (_ !== null) toast('Copied (manual)');
+  }
+};
 }
 async function createRoom(){
   // ensure we have a signed-in user
@@ -467,6 +485,23 @@ async function createRoom(){
   subscribeRoom();
   return roomId;
 };
+  // --- JOIN ROOM (make global) ---
+async function joinRoom(id){
+  roomId = (id || '').trim().toUpperCase();
+  if (!roomId) throw new Error('No code');
+
+  isHost = false;
+  subscribeRoom();                 // start listeners ASAP
+
+  // Update URL so a refresh keeps the same room and it’s shareable
+  history.replaceState(null, '', location.pathname + '?room=' + roomId);
+
+  // Update UI header badges / copy link button
+  setRoomUI();
+  return roomId;
+}
+// expose for any earlier callers (auto-join / button handlers)
+window.joinRoom = joinRoom;
 
 /* ====================== SUBSCRIBE / SEATS / CHAT ====================== */
 async function ensureMySeat(name){
