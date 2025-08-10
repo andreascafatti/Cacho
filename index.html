@@ -68,6 +68,15 @@ h1{font-size:20px;margin:0}
 .seat.eliminated{opacity:.55;filter:grayscale(1)}
 .dealer-btn{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#f9fafb;color:#111827;border-radius:999px;padding:2px 8px;font-size:11px;border:1px solid rgba(255,255,255,.2)}
 
+  /* Make the poker table show the green felt instead of the generic card bg */
+#tableWrap.card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  overflow: hidden; /* keep seats/dice inside rounded felt */
+}
+  
 /* Center current bid */
 .center-bid{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
@@ -502,6 +511,14 @@ async function joinRoom(id){
 }
 // expose for any earlier callers (auto-join / button handlers)
 window.joinRoom = joinRoom;
+  
+// copy link with fallback
+qs('#copyLinkBtn').onclick = async () => {
+  if (!roomId) { toast('Create or join a room first'); return; }
+  const url = location.origin + location.pathname + '?room=' + roomId;
+  try { await navigator.clipboard.writeText(url); toast('Room link copied'); }
+  catch { prompt('Copy this room link:', url); }
+};
 
 /* ====================== SUBSCRIBE / SEATS / CHAT ====================== */
 async function ensureMySeat(name){
@@ -573,19 +590,34 @@ qs('#applySettingsBtn').onclick = async()=>{
   toast('Settings updated');
 };
 
-qs('#startBtn').onclick = async()=>{
-  if(user?.uid!==hostUid){ toast('Only host can start'); return; }
-  const alive = (await seatsRef(roomId).where('eliminated','==',false).get()).docs;
-  if(alive.length<2){ toast('Need at least 2 players'); return; }
-  // roll dice
-  for(const d of alive){
-    const data=d.data();
-    const dice = Array.from({length:data.diceCount||table.settings.dicePerPlayer}, ()=>1+RAND(6));
-    await seatsRef(roomId).doc(d.id).set({ dice, last:'' }, { merge:true });
+qs('#startBtn').onclick = async () => {
+  if (user?.uid !== hostUid) { toast('Only host can start'); return; }
+
+  // fetch alive seats
+  const aliveSnap = await seatsRef(roomId).where('eliminated', '==', false).get();
+  const aliveDocs = aliveSnap.docs;
+  if (aliveDocs.length < 2) { toast('Need at least 2 players'); return; }
+
+  // roll dice for everyone in a single batch
+  const batch = db.batch();
+  for (const d of aliveDocs) {
+    const s = d.data();
+    const count = (s.diceCount ?? table.settings.dicePerPlayer) | 0;
+    const dice = Array.from({ length: count }, () => 1 + Math.floor(Math.random() * 6));
+    batch.set(seatsRef(roomId).doc(d.id), { dice, last: '' }, { merge: true });
   }
-  // pick random starter
-  const firstSeatId = alive[Math.floor(Math.random()*alive.length)].id;
-  await roomRef(roomId).set({ started:true, startSeat:firstSeatId, turnSeat:firstSeatId, prevBid:null, history:[] }, { merge:true });
+
+  // pick random starter and set room state
+  const firstSeatId = aliveDocs[Math.floor(Math.random() * aliveDocs.length)].id;
+  batch.set(roomRef(roomId), {
+    started: true,
+    startSeat: firstSeatId,
+    turnSeat: firstSeatId,
+    prevBid: null,
+    history: []
+  }, { merge: true });
+
+  await batch.commit();
   toast('Game started');
 };
 
