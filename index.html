@@ -310,6 +310,7 @@ function playRattle(dur=0.5){
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.firestore();
 let user=null;
+auth.signInAnonymously().catch(e => console.error('anon sign-in failed', e));
 let authReadyResolve; const authReady = new Promise(res=>authReadyResolve=res);
 auth.onAuthStateChanged(u=>{ user=u; if(authReadyResolve){authReadyResolve(); authReadyResolve=null;} });
 
@@ -434,18 +435,37 @@ function setRoomUI(){
   qs('#copyLinkBtn').style.display = roomId ? 'inline-block':'none';
 }
 async function createRoom(){
-  roomId = randCode(); isHost=true; hostUid=user.uid;
-  await roomRef(roomId).set({ createdAt:Date.now(), hostUid, settings: table.settings, started:false, startSeat:null, turnSeat:null, prevBid:null, history:[] });
+  // ensure we have a signed-in user
+  if (!auth.currentUser) {
+    try {
+      await auth.signInAnonymously();
+      await new Promise(res => {
+        const unsub = auth.onAuthStateChanged(u => { if (u) { unsub(); res(); } });
+      });
+    } catch (e) {
+      console.error(e);
+      throw new Error('Auth failed');
+    }
+  }
+
+  user = auth.currentUser;
+  roomId = randCode();
+  isHost = true;
+  hostUid = user.uid;
+
+  await roomRef(roomId).set({
+    createdAt: Date.now(),
+    hostUid,
+    settings: table.settings,
+    started: false,
+    startSeat: null,
+    turnSeat: null,
+    prevBid: null,
+    history: []
+  });
+
   subscribeRoom();
   return roomId;
-}
-async function joinRoom(id){
-  roomId = id.trim().toUpperCase(); if(!roomId) throw new Error('No code');
-  isHost=false; subscribeRoom(); return roomId;
-}
-qs('#copyLinkBtn').onclick = async()=>{
-  const url = location.origin+location.pathname + '?room=' + roomId;
-  try{ await navigator.clipboard.writeText(url); toast('Room link copied'); }catch(e){ prompt('Copy room link:', url); }
 };
 
 /* ====================== SUBSCRIBE / SEATS / CHAT ====================== */
