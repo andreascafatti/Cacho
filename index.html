@@ -22,38 +22,35 @@ body{
   background:radial-gradient(1200px 800px at 120% -10%,#141b23,transparent),linear-gradient(#0c0f14,#0c0f14)
 }
 .wrap{max-width:1200px;margin:0 auto;padding:14px}
-header{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
-h1{font-size:20px;margin:0}
-.badge{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted)}
+
+/* Buttons & cards */
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .btn{appearance:none;border:none;cursor:pointer;border-radius:12px;padding:10px 14px;background:#162033;color:var(--ink);border:1px solid var(--border);transition:.2s transform}
 .btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 .btn.primary{background:linear-gradient(180deg,#1c2d48,#152235);border-color:#22344f}
 .btn.accent{background:linear-gradient(180deg,#2b3c18,#15240f);border-color:#2f4516;box-shadow:inset 0 0 0 1px rgba(255,209,102,.25);color:#ffe9a8}
 .btn.danger{background:linear-gradient(180deg,#3a2020,#261314);border-color:#4a2a2a;color:#ffdede}
 .btn.ghost{background:transparent}
-.note{font-size:12px;color:var(--muted)}
 .card{background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .panel{padding:14px}
-.stack{display:grid;grid-template-columns:1fr;gap:12px}
-input[type="text"],input[type="number"],select{
-  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);
-  background:#0f1620;color:var(--ink);outline:none
-}
+.badge{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted)}
+.note{font-size:12px;color:var(--muted)}
+input[type="text"],input[type="number"],select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0f1620;color:var(--ink);outline:none}
 
 /* Landing */
 #landing{min-height:65vh;display:flex;align-items:center;justify-content:center}
 .hero{
   width:100%;padding:28px;border:1px solid var(--border);border-radius:20px;
-  background:radial-gradient(800px 500px at 30% -10%,rgba(118,226,244,.12),transparent),#0e1520;
-  text-align:center
+  background:radial-gradient(800px 500px at 30% -10%,rgba(118,226,244,.12),transparent),#0e1520;text-align:center
 }
 .hero h2{font-size:34px;margin:0 0 6px 0}
-.hero p{color:var(--muted);margin-top:0}
 .hero .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .hero input{max-width:200px}
 
-/* Table */
+/* Header & table */
+header{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
 #tableWrap{position:relative;width:100%;aspect-ratio:1.6/1;min-height:460px}
 .table{position:absolute;inset:0;width:100%;height:100%}
 .feltshell{position:absolute;inset:0;border-radius:44px;background:radial-gradient(120% 120% at 50% 40%,var(--felt),var(--felt2));box-shadow:inset 0 0 0 12px #0a2015,inset 0 0 0 30px #072013,0 20px 70px rgba(0,0,0,.45)}
@@ -82,8 +79,6 @@ input[type="text"],input[type="number"],select{
 .center-bid .qty{font-size:42px;font-weight:800}
 .center-bid .facebig{width:44px;height:44px}
 .center-bid .by{font-size:12px;color:var(--muted)}
-
-/* Turn banner */
 .turn-banner{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px dashed var(--border);border-radius:12px;background:#0f1a28}
 
 /* Bid area */
@@ -92,17 +87,12 @@ input[type="text"],input[type="number"],select{
 .stepper{display:flex;align-items:center;border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .stepper button{padding:10px 12px;border:none;background:#0f1a2a;color:var(--ink);cursor:pointer}
 .stepper input{width:76px;text-align:center;border:none;background:#0f1622;color:var(--ink);padding:10px 0;font-weight:700}
-
-/* Face picker */
 .faces{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .facewrap{display:grid;grid-template-rows:auto auto;gap:6px;justify-items:center}
-.facebtn{
-  width:72px;height:72px;border-radius:14px;border:1px solid var(--border);background:#0f1826;
-  display:grid;place-items:center;cursor:pointer;transition:.12s transform
-}
+.facebtn{width:72px;height:72px;border-radius:14px;border:1px solid var(--border);background:#0f1826;display:grid;place-items:center;cursor:pointer;transition:.12s transform}
 .facebtn:hover{transform:translateY(-1px)}
 .facebtn.active{outline:2px solid var(--accent)}
-.faceimg{width:58px;height:58px;image-rendering:auto}
+.faceimg{width:58px;height:58px}
 .facelabel{font-size:12px;color:var(--muted);pointer-events:none}
 
 /* History & chat */
@@ -122,7 +112,6 @@ input[type="text"],input[type="number"],select{
 
 /* Misc */
 .dice-ring{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:48px}
-
 @media (max-width: 720px){
   .seat{width:150px}
   .seat .cup{width:68px;height:68px}
@@ -137,14 +126,14 @@ input[type="text"],input[type="number"],select{
   <!-- Landing -->
   <section id="landing">
     <div class="hero">
-      <h2>Buena cabros! Sale Cacho!</h2>
+      <h2>¡Buena cabros! Sale Cacho!</h2>
       <div id="authNote" class="note">Connecting…</div>
       <div class="actions">
         <button class="btn primary" id="landingCreate" disabled>Create room</button>
         <input id="landingCode" placeholder="Enter room code"/>
         <button class="btn" id="landingJoin" disabled>Join room</button>
       </div>
-      <div class="note" style="margin-top:8px">Tip: send your room link so friends join with one click.</div>
+      <div class="note" style="margin-top:8px">Share the link after you create a room.</div>
     </div>
   </section>
 
@@ -157,10 +146,11 @@ input[type="text"],input[type="number"],select{
     <div class="row">
       <span class="badge">Room: <b id="roomCode">—</b></span>
       <button class="btn ghost" id="copyLinkBtn" style="display:none">Copy room link</button>
+      <button class="btn ghost" id="rulesBtn">Rules</button>
     </div>
   </header>
 
-  <!-- Nickname + table settings -->
+  <!-- Nickname + settings -->
   <section id="seatCard" class="card panel" style="display:none;margin-bottom:12px">
     <div class="row" style="justify-content:space-between">
       <div class="row">
@@ -240,14 +230,14 @@ input[type="text"],input[type="number"],select{
 <!-- Settings (gear) -->
 <button id="settingsBtn" class="btn" style="display:none">⚙️</button>
 <div id="settingsPanel" class="settings">
-  <div class="row" style="justify-content:space-between"><b>Settings</b> <button class="btn ghost" id="rulesBtn">Rules</button></div>
+  <div class="row" style="justify-content:space-between"><b>Settings</b></div>
   <div class="divider" style="height:8px"></div>
   <div class="volrow"><span class="note">Volume</span><input id="volSlider" type="range" min="0" max="1" step="0.01"></div>
   <div class="row" style="margin-top:8px"><button id="muteBtn" class="btn">Mute</button></div>
 </div>
 
 <!-- Rules modal -->
-<div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesHd">
+<div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesHd" style="display:none">
   <div class="sheet">
     <div class="hd"><div id="rulesHd">How to play Cacho (Dudo/Perudo)</div><button class="btn" id="closeRules">Close</button></div>
     <div class="bd">
@@ -317,11 +307,10 @@ function playRattle(dur=0.5){
 }
 
 /* ====================== FIREBASE ====================== */
-let auth, db, user; firebase.initializeApp(firebaseConfig);
-auth=firebase.auth(); db=firebase.firestore();
-
-let authReadyResolve;
-const authReady = new Promise(res=>authReadyResolve=res);
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.firestore();
+let user=null;
+let authReadyResolve; const authReady = new Promise(res=>authReadyResolve=res);
 auth.onAuthStateChanged(u=>{ user=u; if(authReadyResolve){authReadyResolve(); authReadyResolve=null;} });
 
 /* ====================== COLLECTION HELPERS ====================== */
@@ -342,7 +331,7 @@ function totalDiceAlive(){ return seats.filter(s=>!s.eliminated).reduce((sum,s)=
 function dirStep(){ return table.settings.turnDir==='cw'?1:-1; }
 function mod(n,m){ return ((n%m)+m)%m; }
 
-/* ====================== UI HELPERS ====================== */
+/* ====================== TOAST ====================== */
 function toast(msg){
   const b=document.createElement('div');
   b.textContent=msg; b.style.position='fixed'; b.style.bottom='16px'; b.style.left='50%';
@@ -352,7 +341,7 @@ function toast(msg){
   document.body.appendChild(b); setTimeout(()=>b.remove(),1800);
 }
 
-/* ====================== DICE PNG (canvas-generated) ====================== */
+/* ====================== DICE PNG (generated) ====================== */
 async function buildDicePNGs(){
   for(let face=1; face<=6; face++){
     const c=document.createElement('canvas'); c.width=256; c.height=256;
@@ -396,35 +385,41 @@ authReady.then(()=>{
   landingCreate.disabled=false; landingJoin.disabled=false;
 }).catch(()=>{ authNote.textContent='Auth error — reload'; });
 
-landingCreate.onclick = async()=>{
-  await authReady;
-  initAudio();
-  // nickname prompt
+landingCreate.onclick = async () => {
+  await authReady; initAudio();
   let name = (localStorage.getItem('cacho_nick')||'').trim();
   if(!name) name = prompt('Pick a nickname:')||'';
   name = name.trim(); if(!name){ toast('Nickname required'); return; }
   localStorage.setItem('cacho_nick', name);
 
-  await createRoom();
-  await ensureMySeat(name); // host gets a seat immediately
-  afterJoinOrCreateUI();
+  try{
+    await createRoom();
+    await ensureMySeat(name);
+    const url = location.origin + location.pathname + '?room=' + roomId;
+    history.replaceState(null, '', url);
+    enterGameUI();
+    setRoomUI();
+    toast('Room created. Share your link!');
+  }catch(e){ console.error(e); toast('Could not create room. Try again.'); }
 };
 
 landingJoin.onclick = async()=>{
   await authReady; initAudio();
   const code = (landingCode.value||'').trim().toUpperCase();
   if(!code){ toast('Enter a room code'); return; }
-  await joinRoom(code);
-  // nickname prompt
-  let name = (localStorage.getItem('cacho_nick')||'').trim();
-  if(!name) name = prompt('Pick a nickname:')||'';
-  name = name.trim(); if(!name){ toast('Nickname required'); return; }
-  localStorage.setItem('cacho_nick', name);
-  await ensureMySeat(name);
-  afterJoinOrCreateUI();
+  try{
+    await joinRoom(code);
+    let name = (localStorage.getItem('cacho_nick')||'').trim();
+    if(!name) name = prompt('Pick a nickname:')||'';
+    name = name.trim(); if(!name){ toast('Nickname required'); return; }
+    localStorage.setItem('cacho_nick', name);
+    await ensureMySeat(name);
+    enterGameUI();
+    setRoomUI();
+  }catch(e){ console.error(e); toast('Could not join. Check the code.'); }
 };
 
-function afterJoinOrCreateUI(){
+function enterGameUI(){
   landing.style.display='none';
   qs('#topbar').style.display='flex';
   qs('#seatCard').style.display='block';
@@ -439,17 +434,21 @@ function setRoomUI(){
   qs('#copyLinkBtn').style.display = roomId ? 'inline-block':'none';
 }
 async function createRoom(){
-  roomId = randCode(); isHost=true; setRoomUI(); hostUid=user.uid;
+  roomId = randCode(); isHost=true; hostUid=user.uid;
   await roomRef(roomId).set({ createdAt:Date.now(), hostUid, settings: table.settings, started:false, startSeat:null, turnSeat:null, prevBid:null, history:[] });
   subscribeRoom();
-  toast('Room created');
+  return roomId;
 }
 async function joinRoom(id){
-  roomId = id.trim().toUpperCase(); if(!roomId) return;
-  isHost=false; setRoomUI();
-  subscribeRoom();
-  toast('Joined '+roomId);
+  roomId = id.trim().toUpperCase(); if(!roomId) throw new Error('No code');
+  isHost=false; subscribeRoom(); return roomId;
 }
+qs('#copyLinkBtn').onclick = async()=>{
+  const url = location.origin+location.pathname + '?room=' + roomId;
+  try{ await navigator.clipboard.writeText(url); toast('Room link copied'); }catch(e){ prompt('Copy room link:', url); }
+};
+
+/* ====================== SUBSCRIBE / SEATS / CHAT ====================== */
 async function ensureMySeat(name){
   const mine = (await seatsRef(roomId).where('uid','==',user.uid).limit(1).get());
   if(!mine.empty){
@@ -457,11 +456,9 @@ async function ensureMySeat(name){
     await seatsRef(roomId).doc(id).set({ name }, { merge:true });
     mySeatId=id; return;
   }
-  const d = await seatsRef(roomId).add({ uid:user.uid, name, diceCount: table.settings.dicePerPlayer, eliminated:false });
+  const d = await seatsRef(roomId).add({ uid:user.uid, name, diceCount: table.settings.dicePerPlayer, eliminated:false, last:'' });
   mySeatId = d.id;
 }
-
-/* subscribe & chat */
 function subscribeRoom(){
   unsubState && unsubState(); unsubSeats && unsubSeats(); unsubChat && unsubChat();
   unsubState = roomRef(roomId).onSnapshot(snap=>{
@@ -476,7 +473,6 @@ function subscribeRoom(){
     const mine = seats.find(s=>s.uid===user?.uid);
     mySeatId = mine ? mine.id : mySeatId;
     renderAll();
-    // start button hint
     const canStart = seats.filter(s=>!s.eliminated).length>=2;
     qs('#startHint').textContent = canStart ? 'Ready to start.' : 'Need at least 2 players to start.';
   });
@@ -484,42 +480,31 @@ function subscribeRoom(){
     const host=qs('#chatBox'); host.innerHTML='';
     col.docs.forEach(d=>{
       const m=d.data();
-      const div=document.createElement('div'); div.className='msg';
       const who = (seats.find(s=>s.id===m.by)?.name)||'Seat';
-      div.textContent = `${who}: ${m.text}`;
+      const div=document.createElement('div'); div.className='msg'; div.textContent = `${who}: ${m.text}`;
       host.appendChild(div);
     });
     host.scrollTop = host.scrollHeight;
   });
 }
 
-/* ====================== SETTINGS PANEL & RULES ====================== */
+/* ====================== SETTINGS PANEL & RULES TOGGLE ====================== */
 qs('#settingsBtn').onclick=()=>{ const p=qs('#settingsPanel'); p.classList.toggle('open'); initAudio(); };
-qs('#rulesBtn').onclick=()=>{ qs('#rulesModal').classList.add('open'); };
-qs('#closeRules').onclick=()=>{ qs('#rulesModal').classList.remove('open'); };
 qs('#volSlider').value = audio.vol; 
 qs('#volSlider').oninput = (e)=>{ initAudio(); audio.vol=parseFloat(e.target.value); if(audio.gain && !audio.muted) audio.gain.gain.value=audio.vol; localStorage.setItem('cacho_vol', String(audio.vol)); };
 qs('#muteBtn').onclick=()=>{ initAudio(); audio.muted=!audio.muted; if(audio.gain) audio.gain.gain.value = audio.muted?0:audio.vol; localStorage.setItem('cacho_muted', audio.muted?'1':'0'); qs('#muteBtn').textContent = audio.muted?'Unmute':'Mute'; };
 qs('#muteBtn').textContent = audio.muted?'Unmute':'Mute';
 
-/* ====================== TOPBAR UTILS ====================== */
-qs('#copyLinkBtn').onclick = async()=>{
-  const url = location.origin+location.pathname + '?room=' + roomId;
-  try{ await navigator.clipboard.writeText(url); toast('Room link copied'); }catch(e){ prompt('Copy room link:', url); }
-};
+qs('#rulesBtn').onclick = ()=>{ qs('#rulesModal').style.display='flex'; };
+qs('#closeRules').onclick = ()=>{ qs('#rulesModal').style.display='none'; };
 
 /* ====================== CLAIM / SETTINGS / START ====================== */
 qs('#claimBtn').onclick = async()=>{
   if(!roomId){ toast('Create or join a room first'); return; }
   const name = (qs('#seatName').value||'').trim(); if(!name){ toast('Enter a nickname'); return; }
   const existing = seats.find(s=>s.uid===user?.uid);
-  if(existing){
-    await seatsRef(roomId).doc(existing.id).set({ name }, { merge:true });
-    mySeatId = existing.id;
-  }else{
-    const d = await seatsRef(roomId).add({ uid:user.uid, name, diceCount: table.settings.dicePerPlayer, eliminated:false });
-    mySeatId = d.id;
-  }
+  if(existing){ await seatsRef(roomId).doc(existing.id).set({ name }, { merge:true }); mySeatId = existing.id; }
+  else{ const d = await seatsRef(roomId).add({ uid:user.uid, name, diceCount: table.settings.dicePerPlayer, eliminated:false, last:'' }); mySeatId = d.id; }
   toast('Nickname saved');
 };
 
@@ -537,7 +522,7 @@ qs('#startBtn').onclick = async()=>{
   if(user?.uid!==hostUid){ toast('Only host can start'); return; }
   const alive = (await seatsRef(roomId).where('eliminated','==',false).get()).docs;
   if(alive.length<2){ toast('Need at least 2 players'); return; }
-  // roll dice for everyone
+  // roll dice
   for(const d of alive){
     const data=d.data();
     const dice = Array.from({length:data.diceCount||table.settings.dicePerPlayer}, ()=>1+RAND(6));
@@ -571,7 +556,6 @@ function nextAliveSeat(fromId){
   }
   return fromId;
 }
-
 qs('#qtyMinus').onclick=()=>{ const i=qs('#qtyInput'); i.value=Math.max(1,(parseInt(i.value,10)||1)-1); updateFaceLabels(); };
 qs('#qtyPlus').onclick=()=>{ const i=qs('#qtyInput'); const max=totalDiceAlive()||1; i.value=Math.min(max,(parseInt(i.value,10)||1)+1); updateFaceLabels(); };
 qs('#qtyInput').addEventListener('input',updateFaceLabels);
@@ -623,8 +607,8 @@ qs('#dudoBtn').onclick=async()=>{
 
   // reroll all survivors
   for(const d of aliveDocs){
-    const sd=d.data(); if(sd.eliminated || d.id===loserId && eliminated) continue;
-    const dice = Array.from({length:sd.diceCount||(d.id===loserId?newCount:sd.diceCount)||0}, ()=>1+RAND(6));
+    const sd=d.data(); if(sd.eliminated || (d.id===loserId && eliminated)) continue;
+    const dice = Array.from({length:(d.id===loserId?newCount:sd.diceCount)||0}, ()=>1+RAND(6));
     await seatsRef(roomId).doc(d.id).set({ dice }, { merge:true });
   }
 
@@ -646,6 +630,7 @@ qs('#dudoBtn').onclick=async()=>{
   }
   await roomRef(roomId).set(Object.assign({ history: table.history }, newState), { merge:true });
   await seatsRef(roomId).doc(mySeatId).set({ last:`Dudo` }, { merge:true });
+  renderAll();
 };
 
 /* ====================== CHAT ====================== */
@@ -797,17 +782,19 @@ async function onCupClick(seatId){
   await buildDicePNGs();
   renderFacePicker(); updateFaceLabels();
 
-  // Auto-join via URL (?room=CODE or #room=CODE)
-  const m = location.search.match(/[?&]room=([A-Z0-9]+)/i) || location.hash.match(/room=([A-Z0-9]+)/i);
-  if(m){
-    await authReady;
-    await joinRoom(m[1].toUpperCase());
-    // nickname prompt
-    let name = (localStorage.getItem('cacho_nick')||'').trim();
-    if(!name) name = prompt('Pick a nickname:')||'';
-    name = name.trim();
-    if(name){ localStorage.setItem('cacho_nick', name); await ensureMySeat(name); afterJoinOrCreateUI(); }
-  }
+  // After auth, enable landing buttons
+  authReady.then(()=>{
+    // auto-join via URL (?room=CODE or #room=CODE)
+    const m = location.search.match(/[?&]room=([A-Z0-9]+)/i) || location.hash.match(/room=([A-Z0-9]+)/i);
+    if(m){
+      joinRoom(m[1].toUpperCase()).then(async()=>{
+        let name = (localStorage.getItem('cacho_nick')||'').trim();
+        if(!name) name = prompt('Pick a nickname:')||'';
+        name = name.trim();
+        if(name){ localStorage.setItem('cacho_nick', name); await ensureMySeat(name); enterGameUI(); setRoomUI(); }
+      }).catch(()=>toast('Invalid or closed room link'));
+    }
+  });
 })();
 </script>
 
