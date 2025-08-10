@@ -1,57 +1,775 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cacho Multiplayer</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #0b3d0b; color: white; }
-    h1 { text-align: center; }
-    #game { text-align: center; }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cacho (Dudo) — Live Rooms</title>
+
+<!-- Firebase (compat for simpler code) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+<style>
+:root{
+  --bg:#0c0f14; --felt:#0b5b3a; --felt2:#063a25; --rail:#1b2433;
+  --ink:#eaf2fb; --muted:#93a7bc; --accent:#ffd166; --accent2:#76e2f4;
+  --danger:#ff6b6b; --ok:#4ade80; --border:rgba(255,255,255,0.09);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--ink);
+  background:radial-gradient(1200px 800px at 120% -10%,#141b23,transparent),linear-gradient(#0c0f14,#0c0f14)
+}
+.wrap{max-width:1200px;margin:0 auto;padding:14px}
+header{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
+.badge{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{appearance:none;border:none;cursor:pointer;border-radius:12px;padding:9px 12px;background:#162033;color:var(--ink);border:1px solid var(--border);transition:.2s transform}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(180deg,#1c2d48,#152235);border-color:#22344f}
+.btn.accent{background:linear-gradient(180deg,#2b3c18,#15240f);border-color:#2f4516;box-shadow:inset 0 0 0 1px rgba(255,209,102,.25);color:#ffe9a8}
+.btn.danger{background:linear-gradient(180deg,#3a2020,#261314);border-color:#4a2a2a;color:#ffdede}
+.btn.ghost{background:transparent}
+.note{font-size:12px;color:var(--muted)}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.panel{padding:14px}
+.stack{display:grid;grid-template-columns:1fr;gap:12px}
+input[type="text"],input[type="number"],select,textarea{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);
+  background:#0f1620;color:var(--ink);outline:none
+}
+
+/* Table */
+#tableWrap{position:relative;width:100%;aspect-ratio:1.6/1;min-height:460px}
+.table{position:absolute;inset:0;width:100%;height:100%}
+.feltshell{position:absolute;inset:0;border-radius:44px;background:radial-gradient(120% 120% at 50% 40%,var(--felt),var(--felt2));box-shadow:inset 0 0 0 12px #0a2015,inset 0 0 0 30px #072013,0 20px 70px rgba(0,0,0,.45)}
+.rail{position:absolute;inset:-22px;border-radius:52px;background:linear-gradient(180deg,#2a3545,#151c2a);box-shadow:inset 0 0 0 2px rgba(255,255,255,.04)}
+.seat{position:absolute;transform:translate(-50%,-50%);width:200px;text-align:center}
+.seat .name{font-weight:700}
+.seat .sub{font-size:12px;color:var(--muted);height:16px}
+.seat .cup{
+  margin:6px auto 8px;width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(60px 60px at 50% 40%,#152233,#0c1320);border:1px solid var(--border);
+  display:grid;place-items:center;box-shadow:0 10px 20px rgba(0,0,0,.35);transform:rotate(180deg);
+  cursor:pointer;transition:transform .45s ease, opacity .45s ease
+}
+.seat .cup.lift{transform:translateY(-16px) rotate(180deg);opacity:.1}
+.seat.eliminated{opacity:.55;filter:grayscale(1)}
+.dealer-btn{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#f9fafb;color:#111827;border-radius:999px;padding:2px 8px;font-size:11px;border:1px solid rgba(255,255,255,.2)}
+
+/* Center current bid */
+.center-bid{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  min-width:240px;min-height:120px;border-radius:24px;
+  background:radial-gradient(120px 80px at 50% 20%,rgba(255,255,255,.08),rgba(255,255,255,.02));
+  border:1px dashed rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;gap:12px;
+  padding:12px 18px;box-shadow:0 4px 24px rgba(0,0,0,.35),inset 0 0 30px rgba(0,0,0,.25)
+}
+.center-bid .qty{font-size:42px;font-weight:800}
+.center-bid .facebig{width:44px;height:44px}
+.center-bid .by{font-size:12px;color:var(--muted)}
+
+/* Turn banner */
+.turn-banner{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px dashed var(--border);border-radius:12px;background:#0f1a28}
+
+/* Bid area */
+.bid-box{display:grid;grid-template-columns:1fr;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--border);background:#0f1622}
+.bid-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.stepper{display:flex;align-items:center;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.stepper button{padding:10px 12px;border:none;background:#0f1a2a;color:var(--ink);cursor:pointer}
+.stepper input{width:76px;text-align:center;border:none;background:#0f1622;color:var(--ink);padding:10px 0;font-weight:700}
+
+/* Face picker: large dice images w/ labels under */
+.faces{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.facewrap{display:grid;grid-template-rows:auto auto;gap:6px;justify-items:center}
+.facebtn{
+  width:72px;height:72px;border-radius:14px;border:1px solid var(--border);background:#0f1826;
+  display:grid;place-items:center;cursor:pointer;transition:.12s transform
+}
+.facebtn:hover{transform:translateY(-1px)}
+.facebtn.active{outline:2px solid var(--accent)}
+.faceimg{width:58px;height:58px;image-rendering:auto}
+.facelabel{font-size:12px;color:var(--muted);pointer-events:none}
+
+/* History & chat */
+.history{max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:#0f1622}
+.history .rowh{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border)}
+.history .rowh:last-child{border-bottom:none}
+.chat{max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:#0f1622;margin-top:8px}
+.chat .msg{padding:6px 10px;border-bottom:1px solid var(--border);font-size:14px}
+.chat .msg:last-child{border-bottom:none}
+
+/* Modals */
+.modal{position:fixed;inset:0;background:rgba(6,10,14,.65);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;padding:20px;z-index:80}
+.modal.open{display:flex}
+.sheet{width:min(720px,95vw);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.sheet .hd{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sheet .bd{padding:16px}
+
+/* Settings panel */
+#settingsBtn{position:fixed;right:14px;top:14px;z-index:90}
+.settings{position:fixed;right:14px;top:56px;width:260px;border:1px solid var(--border);border-radius:12px;background:#0f1622;padding:12px;display:none;z-index:90}
+.settings.open{display:block}
+.volrow{display:flex;align-items:center;gap:10px}
+.volrow input[type="range"]{flex:1}
+
+/* Peek overlay (uses animated cup directly on seat instead of curtain) */
+.dice-ring{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:48px}
+
+/* Mobile tweaks */
+@media (max-width: 720px){
+  .seat{width:150px}
+  .seat .cup{width:68px;height:68px}
+  .center-bid .qty{font-size:32px}
+  .center-bid .facebig{width:36px;height:36px}
+}
+</style>
 </head>
 <body>
-  <h1>🔥 Cacho Multiplayer 🔥</h1>
-  <div id="game">
-    <button id="createRoom">Create Room</button>
-    <input id="roomId" placeholder="Room ID">
-    <button id="joinRoom">Join Room</button>
-    <div id="status"></div>
+<div class="wrap">
+  <header>
+    <div class="row">
+      <h1>🎲 Cacho (Dudo) — Live Rooms</h1>
+      <span class="badge">Firebase sync • Private dice • Poker table</span>
+    </div>
+    <div class="row">
+      <button class="btn" id="createBtn">Create room</button>
+      <input id="roomInput" placeholder="Room code" style="width:160px"/>
+      <button class="btn" id="joinBtn">Join room</button>
+      <span class="badge">Room: <b id="roomCode">—</b></span>
+      <button class="btn ghost" id="copyLinkBtn" style="display:none">Copy room link</button>
+    </div>
+  </header>
+
+  <!-- Nickname prompt (auto on join) -->
+  <section id="seatCard" class="card panel" style="display:none;margin-bottom:12px">
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <label style="min-width:120px">Your nickname</label>
+        <input id="seatName" type="text" placeholder="e.g., Andrea" style="width:220px"/>
+        <button class="btn primary" id="claimBtn">Claim/Update seat</button>
+      </div>
+      <div class="row">
+        <label style="min-width:140px">Turn order</label>
+        <select id="turnDir"><option value="cw">Left (clockwise)</option><option value="ccw">Right (counter-clockwise)</option></select>
+        <label style="min-width:120px">Dice/player</label>
+        <input id="dicePerPlayer" type="number" min="1" max="10" value="5" style="width:80px"/>
+        <label style="min-width:80px">Aces wild</label>
+        <select id="acesWild"><option value="true">Yes</option><option value="false">No</option></select>
+        <label style="min-width:120px">Switch rule</label>
+        <select id="switchRule"><option value="perudo">Perudo</option><option value="simple">Simple</option></select>
+        <button class="btn" id="applySettingsBtn">Apply (host)</button>
+        <button class="btn accent" id="startBtn">Start round (host)</button>
+      </div>
+    </div>
+    <div class="note" style="margin-top:8px">Only the <b>host</b> (room creator) can change rules or start rounds. Host badge shows under their nickname.</div>
+  </section>
+
+  <!-- Main stack -->
+  <section id="gameStack" class="stack" style="display:none">
+    <!-- Turn banner -->
+    <div class="card panel">
+      <div class="turn-banner">
+        <div>
+          <div class="note">Current turn</div>
+          <div id="turnPlayer" style="font-weight:700;font-size:18px">—</div>
+        </div>
+        <div class="row">
+          <div class="note">Current bid:</div>
+          <div id="currentBidBox" class="badge">—</div>
+          <div class="note" id="minNextNote" style="margin-left:8px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Poker Table -->
+    <div id="tableWrap" class="card">
+      <div class="feltshell table"></div><div class="rail table"></div>
+      <div id="seats"></div>
+      <div id="centerBid" class="center-bid"><span class="note">Place the first bid</span></div>
+    </div>
+
+    <!-- Make a bid -->
+    <div class="card panel">
+      <div class="note" style="margin-bottom:6px">Make a bid</div>
+      <div class="bid-box">
+        <div class="bid-row">
+          <div><label>Quantity</label><div class="stepper"><button id="qtyMinus">−</button><input id="qtyInput" type="number" min="1" value="1"/><button id="qtyPlus">+</button></div></div>
+        </div>
+        <div class="faces" id="facePicker"></div>
+        <div class="bid-row">
+          <button class="btn primary" id="placeBidBtn">Place bid</button>
+          <button class="btn danger" id="dudoBtn" disabled>“Dudo”</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History + Chat -->
+    <div class="card panel">
+      <div class="note" style="margin-bottom:6px">Bid history</div>
+      <div id="history" class="history" aria-live="polite"></div>
+      <div class="divider" style="height:8px"></div>
+      <div class="note" style="margin-bottom:6px">Table chat</div>
+      <div id="chatBox" class="chat"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="chatInput" placeholder="Type a message…" style="flex:1;max-width:600px"/>
+        <button class="btn" id="sendChat">Send</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Settings (gear) -->
+<button id="settingsBtn" class="btn">⚙️</button>
+<div id="settingsPanel" class="settings">
+  <div class="row" style="justify-content:space-between"><b>Settings</b> <button class="btn ghost" id="rulesBtn">Rules</button></div>
+  <div class="divider" style="height:8px"></div>
+  <div class="volrow"><span class="note">Volume</span><input id="volSlider" type="range" min="0" max="1" step="0.01"></div>
+  <div class="row" style="margin-top:8px"><button id="muteBtn" class="btn">Mute</button></div>
+</div>
+
+<!-- Rules modal -->
+<div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesHd">
+  <div class="sheet">
+    <div class="hd"><div id="rulesHd">How to play Cacho (Dudo/Perudo)</div><button class="btn" id="closeRules">Close</button></div>
+    <div class="bd">
+      <p>Players secretly roll dice, then bid on how many of a face exist across <i>all</i> dice. Next player must raise or call <b>Dudo</b>.</p>
+      <ul>
+        <li><b>Aces wild (optional):</b> ⚀ counts toward any non-⚀ bid.</li>
+        <li><b>Switch rule (Perudo):</b> To ⚀ requires ≥ ceil(q/2). From ⚀ requires ≥ 2×q. (Simple: raise like normal.)</li>
+        <li><b>Dudo:</b> Reveal all dice. If bid holds (actual ≥ bid), challenger loses a die; otherwise bidder loses one.</li>
+        <li><b>Elimination:</b> Reach 0 dice → out. Last player with dice wins.</li>
+      </ul>
+    </div>
   </div>
+</div>
 
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDNpj7lYg03u01lnyrTxTDDMZXArlecD2g",
-      authDomain: "cacho-17aef.firebaseapp.com",
-      projectId: "cacho-17aef",
-      storageBucket: "cacho-17aef.firebasestorage.app",
-      messagingSenderId: "482360087406",
-      appId: "1:482360087406:web:057b5cb325abc63bf0677f",
-      measurementId: "G-E3DYKHXJLL"
-    };
+<script>
+/* ====================== CONFIG / CONSTANTS ====================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDNpj7lYg03u01lnyrTxTDDMZXArlecD2g",
+  authDomain: "cacho-17aef.firebaseapp.com",
+  projectId: "cacho-17aef",
+  storageBucket: "cacho-17aef.firebasestorage.app",
+  messagingSenderId: "482360087406",
+  appId: "1:482360087406:web:057b5cb325abc63bf0677f",
+  measurementId: "G-E3DYKHXJLL"
+};
 
-    // Init Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+const DICE_NAMES_S = {1:"As",2:"Tonto",3:"Tren",4:"Quadra",5:"Quina",6:"Sexta"};
+const DICE_NAMES_P = {1:"Ases",2:"Tontos",3:"Trenes",4:"Quadras",5:"Quinas",6:"Sextas"};
+const qs = (s,el=document)=>el.querySelector(s);
+const qsa = (s,el=document)=>[...el.querySelectorAll(s)];
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const RAND = n => Math.floor(Math.random()*n);
 
-    document.getElementById('createRoom').addEventListener('click', async () => {
-      const roomRef = await db.collection('rooms').add({ createdAt: Date.now() });
-      document.getElementById('status').innerText = `Room created! ID: ${roomRef.id}`;
+/* ====================== AUDIO (WebAudio) ====================== */
+const audio = { ctx:null, gain:null, vol:parseFloat(localStorage.getItem('cacho_vol')||'0.7'), muted:localStorage.getItem('cacho_muted')==='1' };
+function initAudio(){
+  if(audio.ctx) return;
+  try{
+    audio.ctx = new (window.AudioContext||window.webkitAudioContext)();
+    audio.gain = audio.ctx.createGain();
+    audio.gain.gain.value = audio.muted?0:audio.vol;
+    audio.gain.connect(audio.ctx.destination);
+  }catch(e){}
+}
+function playClick(freq=220, dur=0.07){
+  if(!audio.ctx) return;
+  const o = audio.ctx.createOscillator();
+  const g = audio.ctx.createGain();
+  o.type='square'; o.frequency.value=freq;
+  g.gain.value=0.0001;
+  o.connect(g); g.connect(audio.gain);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.25, audio.ctx.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, audio.ctx.currentTime+dur);
+  o.stop(audio.ctx.currentTime+dur+0.01);
+}
+function playRattle(dur=0.5){
+  if(!audio.ctx) return;
+  const bufferSize = audio.ctx.sampleRate * dur;
+  const buffer = audio.ctx.createBuffer(1, bufferSize, audio.ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1)*0.3;
+  const noise = audio.ctx.createBufferSource(); noise.buffer = buffer;
+  const filter = audio.ctx.createBiquadFilter(); filter.type='highpass'; filter.frequency.value=600;
+  noise.connect(filter); filter.connect(audio.gain); noise.start();
+}
+
+/* ====================== FIREBASE ====================== */
+let app, auth, db, user;
+firebase.initializeApp(firebaseConfig);
+auth=firebase.auth(); db=firebase.firestore();
+auth.signInAnonymously().then(()=>{ user=auth.currentUser; }).catch(console.error);
+
+function roomRef(id){ return db.collection('cacho_live_rooms').doc(id); }
+function seatsRef(id){ return roomRef(id).collection('seats'); }
+function chatRef(id){ return roomRef(id).collection('chat'); }
+
+/* ====================== STATE ====================== */
+const pngFaces = new Array(7).fill(null); // 1..6 dataURLs
+let roomId=null, isHost=false, hostUid=null;
+let unsubState=null, unsubSeats=null, unsubChat=null;
+let seats=[], table={ settings:{dicePerPlayer:5,acesWild:true,switchRule:'perudo',turnDir:'cw'}, started:false, startSeat:null, turnSeat:null, prevBid:null, history:[] };
+let mySeatId=null;
+
+function mySeat(){ return seats.find(s=>s.id===mySeatId); }
+function seatById(id){ return seats.find(s=>s.id===id); }
+function totalDiceAlive(){ return seats.filter(s=>!s.eliminated).reduce((sum,s)=>sum+(s.diceCount||0),0); }
+function dirStep(){ return table.settings.turnDir==='cw'?1:-1; }
+function mod(n,m){ return ((n%m)+m)%m; }
+
+/* ====================== UI HELPERS ====================== */
+function toast(msg){
+  const b=document.createElement('div');
+  b.textContent=msg; b.style.position='fixed'; b.style.bottom='16px'; b.style.left='50%';
+  b.style.transform='translateX(-50%)'; b.style.background='#0f1a28';
+  b.style.border='1px solid var(--border)'; b.style.padding='8px 12px';
+  b.style.borderRadius='10px'; b.style.zIndex='120';
+  document.body.appendChild(b); setTimeout(()=>b.remove(),1800);
+}
+
+/* ====================== DICE PNG GENERATOR ====================== */
+/* We generate crisp dice faces with canvas, export to PNG data URLs, then use as <img src>. */
+async function buildDicePNGs(){
+  for(let face=1; face<=6; face++){
+    const c=document.createElement('canvas'); c.width=256; c.height=256;
+    const ctx=c.getContext('2d');
+    // background
+    ctx.fillStyle='#ffffff'; ctx.strokeStyle='#c9c9c9';
+    roundRect(ctx,16,16,224,224,34); ctx.fill(); ctx.lineWidth=6; ctx.stroke();
+    // pips
+    ctx.fillStyle='#111'; const r=18;
+    const pos = pipPositions(face);
+    pos.forEach(([x,y])=>{ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); });
+    pngFaces[face]=c.toDataURL('image/png');
+  }
+}
+function roundRect(ctx,x,y,w,h,r){ const rr=r;
+  ctx.beginPath();
+  ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr);
+  ctx.closePath();
+}
+function pipPositions(face){
+  // positions based on 256px canvas
+  const G = 256/6;
+  const spots = {
+    1:[[3*G,3*G]],
+    2:[[2*G,2*G],[4*G,4*G]],
+    3:[[2*G,2*G],[3*G,3*G],[4*G,4*G]],
+    4:[[2*G,2*G],[2*G,4*G],[4*G,2*G],[4*G,4*G]],
+    5:[[2*G,2*G],[2*G,4*G],[3*G,3*G],[4*G,2*G],[4*G,4*G]],
+    6:[[2*G,2*G],[2*G,3*G],[2*G,4*G],[4*G,2*G],[4*G,3*G],[4*G,4*G]]
+  };
+  return spots[face];
+}
+
+/* ====================== ROOM / JOIN / LINKS ====================== */
+function randCode(n=6){ const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<n;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
+function setRoomUI(){
+  qs('#roomCode').textContent = roomId || '—';
+  qs('#copyLinkBtn').style.display = roomId ? 'inline-block':'none';
+}
+async function createRoom(){
+  if(!user) { toast('Connecting… try again'); return; }
+  roomId = randCode(); isHost=true; setRoomUI(); hostUid=user.uid;
+  await roomRef(roomId).set({ createdAt:Date.now(), hostUid, settings: table.settings, started:false, startSeat:null, turnSeat:null, prevBid:null, history:[] });
+  subscribeRoom();
+  toast('Room created');
+  // auto-prompt nickname
+  qs('#seatCard').style.display='block';
+}
+async function joinRoom(id){
+  roomId = id.trim().toUpperCase(); if(!roomId) return;
+  isHost=false; setRoomUI();
+  subscribeRoom();
+  qs('#seatCard').style.display='block';
+  toast('Joined '+roomId);
+}
+function autoJoinFromURL(){
+  const m = location.search.match(/[?&]room=([A-Z0-9]+)/i) || location.hash.match(/room=([A-Z0-9]+)/i);
+  if(m){ joinRoom(m[1].toUpperCase()); }
+}
+
+function subscribeRoom(){
+  qs('#gameStack').style.display='grid';
+  unsubState && unsubState(); unsubSeats && unsubSeats(); unsubChat && unsubChat();
+  unsubState = roomRef(roomId).onSnapshot(snap=>{
+    const d=snap.data(); if(!d) return;
+    table.settings = d.settings || table.settings;
+    hostUid = d.hostUid || hostUid;
+    table.started = !!d.started; table.startSeat=d.startSeat||null; table.turnSeat=d.turnSeat||null; table.prevBid=d.prevBid||null; table.history=d.history||[];
+    renderAll();
+  });
+  unsubSeats = seatsRef(roomId).onSnapshot(async col=>{
+    seats = col.docs.map(doc=>({ id:doc.id, ...doc.data() }));
+    // If I have no seat yet, try to find seat with my uid
+    const mine = seats.find(s=>s.uid===user?.uid);
+    mySeatId = mine ? mine.id : mySeatId;
+    renderAll();
+  });
+  unsubChat = chatRef(roomId).orderBy('t','asc').onSnapshot(col=>{
+    const host=qs('#chatBox'); host.innerHTML='';
+    col.docs.forEach(d=>{
+      const m=d.data();
+      const div=document.createElement('div'); div.className='msg';
+      const who = (seats.find(s=>s.id===m.by)?.name)||'Seat';
+      div.textContent = `${who}: ${m.text}`;
+      host.appendChild(div);
     });
+    host.scrollTop = host.scrollHeight;
+  });
+}
 
-    document.getElementById('joinRoom').addEventListener('click', async () => {
-      const roomId = document.getElementById('roomId').value;
-      const roomRef = db.collection('rooms').doc(roomId);
-      const doc = await roomRef.get();
-      if (doc.exists) {
-        document.getElementById('status').innerText = `Joined room: ${roomId}`;
-      } else {
-        document.getElementById('status').innerText = `Room not found`;
+/* ====================== SETTINGS PANEL & RULES ====================== */
+qs('#settingsBtn').onclick=()=>{ const p=qs('#settingsPanel'); p.classList.toggle('open'); initAudio(); };
+qs('#rulesBtn').onclick=()=>{ qs('#rulesModal').classList.add('open'); };
+qs('#closeRules').onclick=()=>{ qs('#rulesModal').classList.remove('open'); };
+qs('#volSlider').value = audio.vol; 
+qs('#volSlider').oninput = (e)=>{ initAudio(); audio.vol=parseFloat(e.target.value); if(audio.gain && !audio.muted) audio.gain.gain.value=audio.vol; localStorage.setItem('cacho_vol', String(audio.vol)); };
+qs('#muteBtn').onclick=()=>{ initAudio(); audio.muted=!audio.muted; if(audio.gain) audio.gain.gain.value = audio.muted?0:audio.vol; localStorage.setItem('cacho_muted', audio.muted?'1':'0'); qs('#muteBtn').textContent = audio.muted?'Unmute':'Mute'; };
+qs('#muteBtn').textContent = audio.muted?'Unmute':'Mute';
+
+/* ====================== CLAIM / SETTINGS / START ====================== */
+qs('#createBtn').onclick = createRoom;
+qs('#joinBtn').onclick = ()=>{ const code=qs('#roomInput').value||''; if(!code) return; joinRoom(code); };
+qs('#copyLinkBtn').onclick = async()=>{
+  const url = location.origin+location.pathname + '?room=' + roomId;
+  try{ await navigator.clipboard.writeText(url); toast('Room link copied'); }catch(e){ prompt('Copy room link:', url); }
+};
+qs('#claimBtn').onclick = async()=>{
+  if(!roomId){ toast('Create or join a room first'); return; }
+  const name = (qs('#seatName').value||'').trim(); if(!name){ toast('Enter a nickname'); return; }
+  // Upsert seat by uid
+  const existing = seats.find(s=>s.uid===user?.uid);
+  if(existing){
+    await seatsRef(roomId).doc(existing.id).set({ name }, { merge:true });
+    mySeatId = existing.id;
+  }else{
+    const d = await seatsRef(roomId).add({ uid:user.uid, name, diceCount: table.settings.dicePerPlayer, eliminated:false });
+    mySeatId = d.id;
+    // seed dice
+    const dice = Array.from({length:table.settings.dicePerPlayer}, ()=>1+RAND(6));
+    await seatsRef(roomId).doc(d.id).set({ dice }, { merge:true });
+  }
+  toast('Nickname saved');
+};
+qs('#applySettingsBtn').onclick = async()=>{
+  if(user?.uid!==hostUid){ toast('Only host can change rules'); return; }
+  table.settings.dicePerPlayer = clamp(parseInt(qs('#dicePerPlayer').value,10)||5,1,10);
+  table.settings.acesWild = qs('#acesWild').value==='true';
+  table.settings.switchRule = qs('#switchRule').value;
+  table.settings.turnDir = qs('#turnDir').value;
+  await roomRef(roomId).set({ settings: table.settings }, { merge:true });
+  toast('Settings updated');
+};
+qs('#startBtn').onclick = async()=>{
+  if(user?.uid!==hostUid){ toast('Only host can start'); return; }
+  // reroll all players (not eliminated)
+  const col = await seatsRef(roomId).get();
+  let firstSeatId=null;
+  for(const d of col.docs){
+    const data=d.data();
+    const dice = Array.from({length:data.diceCount||table.settings.dicePerPlayer}, ()=>1+RAND(6));
+    await seatsRef(roomId).doc(d.id).set({ dice, eliminated:false, diceCount:data.diceCount||table.settings.dicePerPlayer, last:'' }, { merge:true });
+    if(!firstSeatId) firstSeatId=d.id;
+  }
+  await roomRef(roomId).set({ started:true, startSeat:firstSeatId, turnSeat:firstSeatId, prevBid:null, history:[] }, { merge:true });
+  toast('Round started');
+};
+
+/* ====================== BIDDING ====================== */
+function labelFor(face, q){ return (q>=2?DICE_NAMES_P:DICE_NAMES_S)[face]; }
+function isValidRaise(prev,next){
+  if(!prev) return next.qty>=1 && next.face>=1 && next.face<=6;
+  const aces=table.settings.acesWild, sw=table.settings.switchRule;
+  if(sw==='perudo' && aces){
+    if(prev.face!==1 && next.face===1) return next.qty >= Math.ceil(prev.qty/2);
+    if(prev.face===1 && next.face!==1) return next.qty >= prev.qty*2;
+  }
+  if(prev.face===next.face) return next.qty > prev.qty;
+  return next.qty >= prev.qty && next.face > prev.face;
+}
+function nextAliveSeat(fromId){
+  if(seats.length===0) return null;
+  const idx = seats.findIndex(s=>s.id===fromId);
+  const step = dirStep();
+  for(let k=1;k<=seats.length;k++){
+    const j = mod(idx + step*k, seats.length);
+    if(!seats[j].eliminated) return seats[j].id;
+  }
+  return fromId;
+}
+qs('#qtyMinus').onclick=()=>{ const i=qs('#qtyInput'); i.value=Math.max(1,(parseInt(i.value,10)||1)-1); updateFaceLabels(); };
+qs('#qtyPlus').onclick=()=>{ const i=qs('#qtyInput'); const max=totalDiceAlive()||1; i.value=Math.min(max,(parseInt(i.value,10)||1)+1); updateFaceLabels(); };
+qs('#qtyInput').addEventListener('input',updateFaceLabels);
+qs('#placeBidBtn').onclick=async()=>{
+  if(!roomId){ toast('Join or create a room'); return; }
+  if(!mySeatId){ toast('Claim a nickname'); return; }
+  if(table.turnSeat !== mySeatId){ toast('Not your turn'); return; }
+  const qty = parseInt(qs('#qtyInput').value,10)||1;
+  const face = parseInt(qs('.facebtn.active')?.dataset.face||'0',10);
+  if(!face){ toast('Pick a face'); return; }
+  const me = mySeat(); const bid = { qty, face, by: mySeatId, byName: me?.name||'Seat', at: Date.now() };
+  if(!isValidRaise(table.prevBid, bid)){ toast('Invalid raise'); return; }
+  const nextSeatId = nextAliveSeat(mySeatId);
+  const hist = (table.history||[]).concat([{type:'bid', ...bid}]);
+  await roomRef(roomId).set({ prevBid: { qty, face, by: mySeatId, byName: me?.name }, turnSeat: nextSeatId, history: hist }, { merge:true });
+  await seatsRef(roomId).doc(mySeatId).set({ last:`Bid ${qty} ${labelFor(face, qty)}` }, { merge:true });
+};
+qs('#dudoBtn').onclick=async()=>{
+  if(!roomId){ toast('Join or create a room'); return; }
+  if(!mySeatId){ toast('Claim a nickname'); return; }
+  if(table.turnSeat !== mySeatId){ toast('Not your turn'); return; }
+  if(!table.prevBid){ toast('No bid to doubt'); return; }
+  const face = table.prevBid.face;
+  const aces=table.settings.acesWild;
+  const col=await seatsRef(roomId).get(); let total=0;
+  for(const d of col.docs){
+    const sd=d.data();
+    if(sd.eliminated) continue;
+    const dice = sd.dice || [];
+    for(const pip of dice){
+      if(pip===face) total++; else if(aces && face!==1 && pip===1) total++;
+    }
+  }
+  const bidderId = table.prevBid.by;
+  const holds = total >= table.prevBid.qty;
+  const loserId = holds ? mySeatId : bidderId;
+  // remove a die
+  const loserSnap = await seatsRef(roomId).doc(loserId).get();
+  const loser = loserSnap.data();
+  const newCount = Math.max(0, (loser.diceCount||5) - 1);
+  const eliminated = newCount===0;
+  await seatsRef(roomId).doc(loserId).set({ diceCount:newCount, eliminated }, { merge:true });
+  // reroll all survivors
+  const col2=await seatsRef(roomId).get();
+  for(const d of col2.docs){
+    const sd=d.data(); if(sd.eliminated) continue;
+    const dice = Array.from({length:sd.diceCount||0}, ()=>1+RAND(6));
+    await seatsRef(roomId).doc(d.id).set({ dice }, { merge:true });
+  }
+  // compute next start
+  const nextStart = eliminated ? nextAliveSeat(loserId) : loserId;
+  const aliveCount = (await seatsRef(roomId).where('eliminated','==',false).get()).size;
+  let newState={ prevBid:null, turnSeat: nextStart, startSeat: nextStart };
+  const hist=(table.history||[]).concat([
+    {type:'dudo', by: mySeatId, byName: mySeat()?.name, at: Date.now()},
+    {type:'round', text: holds? `Bid holds (${total}). ${mySeat()?.name} loses a die.`:`Bid fails (${total}). ${seatById(table.prevBid.by)?.name||'Seat'} loses a die.`}
+  ]);
+  if(aliveCount<=1){
+    const still = (await seatsRef(roomId).where('eliminated','==',false).get()).docs[0];
+    const winnerName = still? (still.data().name||'Someone') : 'No one';
+    newState.started=false;
+    table.history = hist.concat([{type:'round', text:`🏆 ${winnerName} wins the game!`}]);
+  }else{
+    table.history = hist;
+  }
+  await roomRef(roomId).set(Object.assign({ history: table.history }, newState), { merge:true });
+  await seatsRef(roomId).doc(mySeatId).set({ last:`Dudo` }, { merge:true });
+};
+
+/* ====================== CHAT ====================== */
+qs('#sendChat').onclick = async()=>{
+  if(!roomId || !mySeatId) return;
+  const t = (qs('#chatInput').value||'').trim(); if(!t) return;
+  await chatRef(roomId).add({ by: mySeatId, text: t, t: Date.now() });
+  qs('#chatInput').value='';
+};
+
+/* ====================== KICK (host only) ====================== */
+function renderKickButton(seat){
+  if(user?.uid!==hostUid) return '';
+  if(seat.uid===hostUid) return '<span class="badge">Host</span>';
+  return `<button class="btn danger btn-kick" data-id="${seat.id}" style="padding:4px 8px">Kick</button>`;
+}
+async function handleKick(id){
+  if(user?.uid!==hostUid) return;
+  await seatsRef(roomId).doc(id).delete();
+  toast('Player kicked');
+}
+
+/* ====================== FACE PICKER / LABELS ====================== */
+function renderFacePicker(){
+  const fp=qs('#facePicker'); fp.innerHTML='';
+  const q=parseInt(qs('#qtyInput').value,10)||1;
+  for(let f=1; f<=6; f++){
+    const wrap=document.createElement('div'); wrap.className='facewrap';
+    const btn=document.createElement('button'); btn.className='facebtn'+(f===2?' active':''); btn.dataset.face=f;
+    const img=document.createElement('img'); img.className='faceimg'; img.alt='die'; img.src=pngFaces[f]||'';
+    btn.appendChild(img);
+    btn.onclick=()=>{ qsa('.facebtn', fp).forEach(x=>x.classList.remove('active')); btn.classList.add('active'); };
+    const lab=document.createElement('div'); lab.className='facelabel'; lab.setAttribute('data-lab', String(f)); lab.textContent = labelFor(f,q);
+    wrap.appendChild(btn); wrap.appendChild(lab); fp.appendChild(wrap);
+  }
+}
+function updateFaceLabels(){
+  const q = parseInt(qs('#qtyInput').value,10)||1;
+  qsa('.facelabel').forEach(l=>{ const f=parseInt(l.getAttribute('data-lab'),10); l.textContent = labelFor(f,q); });
+}
+
+/* ====================== RENDERING (Table, seats, bid, history) ====================== */
+function renderAll(){
+  renderSeats();
+  renderTurn();
+  renderBidUI();
+  renderHistory();
+  renderCurrentBid();
+}
+function renderSeats(){
+  const host=qs('#seats'); host.innerHTML='';
+  const N=seats.length; if(N===0) return;
+  const turnIndex = Math.max(0, seats.findIndex(s=>s.id===table.turnSeat));
+  for(let i=0;i<N;i++){
+    const p=seats[i], isTurn=(p.id===table.turnSeat);
+    const k=(i - turnIndex + N) % N;
+    const theta = Math.PI/2 + (k * (2*Math.PI/N)) * (table.settings.turnDir==='cw'?1:-1);
+    const r=42; const x=50 + r*Math.cos(theta); const y=50 + r*Math.sin(theta);
+    const seat=document.createElement('div'); seat.className='seat'+(p.eliminated?' eliminated':''); seat.style.left=x+'%'; seat.style.top=y+'%';
+    seat.innerHTML=`
+      <div class="dealer-btn" style="display:${p.id===table.startSeat?'inline-block':'none'}">BTN</div>
+      <div class="name">${p.name||'—'} ${p.uid===hostUid?'<span class="badge">Host</span>':''} ${renderKickButton(p)}</div>
+      <div class="cup" data-seat="${p.id}" title="Click to peek your dice">🍶</div>
+      <div class="dice-ring" id="ring-${p.id}"></div>
+      <div class="sub" id="sub-${p.id}">${p.last||''}</div>
+    `;
+    host.appendChild(seat);
+  }
+  // wire cups and kicks
+  qsa('.seat .cup', host).forEach(c=>{ c.onclick=()=>onCupClick(c.dataset.seat); });
+  qsa('.btn-kick', host).forEach(b=>{ b.onclick=()=>handleKick(b.dataset.id); });
+}
+function renderTurn(){
+  const curr = seatById(table.turnSeat);
+  qs('#turnPlayer').textContent = curr? (curr.name + (curr.eliminated?' (out)':'')) : '—';
+  const me = mySeat();
+  qs('#dudoBtn').disabled = !table.prevBid || !(me && me.id===table.turnSeat);
+}
+function renderBidUI(){
+  renderFacePicker(); updateFaceLabels();
+}
+function renderHistory(){
+  const h=qs('#history');
+  if(!table.history || table.history.length===0){ h.innerHTML='<div class="rowh"><span class="note">No bids yet</span></div>'; return; }
+  h.innerHTML = table.history.map(item=>
+    item.type==='bid' ? `<div class="rowh">🗣️ <b>${item.byName||'Seat'}</b> bids <b>${item.qty}</b> × <img src="${pngFaces[item.face]||''}" style="width:20px;height:20px;vertical-align:-4px">`
+    : item.type==='dudo' ? `<div class="rowh">❗ <b>${item.byName||'Seat'}</b> calls <b>Dudo</b>!</div>`
+    : `<div class="rowh">🔔 ${item.text}</div>`
+  ).join('');
+  h.scrollTop=h.scrollHeight;
+}
+function minNextBidText(){
+  if(!table.prevBid) return 'First bid can be any quantity and face.';
+  const b=table.prevBid; const sw=table.settings.switchRule; const aces=table.settings.acesWild;
+  if(sw==='perudo' && aces){
+    if(b.face!==1) return `≥ same quantity with higher face, or > quantity. To ⚀: ≥ ${Math.ceil(b.qty/2)} ⚀.`;
+    return `From ⚀ to 2–6: ≥ ${b.qty*2} of that face.`;
+  }
+  return '≥ same quantity & higher face, or > quantity.';
+}
+function renderCurrentBid(){
+  const box=qs('#currentBidBox'); const center=qs('#centerBid');
+  if(!table.prevBid){ box.textContent='—'; center.innerHTML='<span class="note">Place the first bid</span>'; }
+  else{
+    const html = `${(seatById(table.prevBid.by)||{}).name||'Seat'}: <b>${table.prevBid.qty}</b> × <img src="${pngFaces[table.prevBid.face]||''}" style="width:20px;height:20px;vertical-align:-4px">`;
+    box.innerHTML=html; center.innerHTML=`<span class="qty">${table.prevBid.qty}</span> <img class="facebig" src="${pngFaces[table.prevBid.face]||''}"> <span class="by">by</span> <b>${table.prevBid.byName||'Seat'}</b>`;
+  }
+  qs('#minNextNote').textContent=minNextBidText();
+}
+
+/* ====================== CUP / DICE REVEAL (with animation & ring layout) ====================== */
+async function onCupClick(seatId){
+  const seat = seatById(seatId); if(!seat) return;
+  if(seat.uid!==user?.uid){ toast('You can only peek your own dice'); return; }
+  const seatEl = qs(`.seat .cup[data-seat="${seatId}"]`);
+  const ringEl = qs(`#ring-${seatId}`);
+  if(!seatEl || !ringEl) return;
+  initAudio();
+
+  // Animate lift
+  seatEl.classList.add('lift'); playClick(380, 0.08); playRattle(0.45);
+
+  // Rolling animation: cycle fake faces while fetching real dice
+  ringEl.innerHTML=''; const n = seat.diceCount||0;
+  const imgs = [];
+  for(let i=0;i<n;i++){
+    const img=document.createElement('img'); img.style.width='44px'; img.style.height='44px'; img.style.borderRadius='8px'; img.style.boxShadow='0 2px 6px rgba(0,0,0,.35)';
+    img.src = pngFaces[1]; imgs.push(img); ringEl.appendChild(img);
+  }
+  const tStart=performance.now();
+  const rollAnim = setInterval(()=>{
+    imgs.forEach(img=>{ img.src = pngFaces[1+RAND(6)]; });
+  }, 80);
+
+  // Load actual dice from Firestore (owner can read their own dice directly)
+  const doc = await seatsRef(roomId).doc(seatId).get();
+  const real = (doc.data()||{}).dice || [];
+  const elapsed = performance.now() - tStart;
+  const waitMore = Math.max(0, 900 - elapsed); // ensure ~0.9s roll
+  await sleep(waitMore);
+  clearInterval(rollAnim);
+
+  // Reveal actual pips
+  imgs.forEach((img,idx)=>{ img.src = pngFaces[real[idx]||1]; });
+
+  // Second click to drop cup
+  seatEl.onclick = async()=>{
+    // drop cup
+    playClick(160,0.06);
+    seatEl.classList.remove('lift');
+    // restore original handler after drop completes
+    await sleep(450);
+    seatEl.onclick = ()=>onCupClick(seatId);
+  };
+}
+
+/* ====================== INIT / BOOT ====================== */
+(async function init(){
+  await buildDicePNGs();
+  renderFacePicker(); updateFaceLabels();
+
+  // Auto volume label + init
+  if(audio.muted && audio.gain) audio.gain.gain.value=0;
+
+  // Auto-join by URL
+  autoJoinFromURL();
+
+  // If no room yet, show stack anyway so user can create room
+  qs('#gameStack').style.display='grid';
+})();
+</script>
+
+<!--
+FIRESTORE SECURITY RULES (recommended)
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /cacho_live_rooms/{roomId} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.resource.data.keys().hasOnly(['createdAt','hostUid','settings','started','startSeat','turnSeat','prevBid','history'])
+                   && (request.auth.uid == resource.data.hostUid);
+      match /seats/{seatId} {
+        allow read: if true; // everyone sees names/diceCount/eliminated; client fetches dice only for its own uid
+        allow write: if request.auth != null
+                     && ((request.resource.data.uid == request.auth.uid));
       }
-    });
-  </script>
+      match /chat/{msgId} {
+        allow read: if true;
+        allow write: if request.auth != null; // optional tighten: require seat membership
+      }
+    }
+  }
+}
+-->
 </body>
 </html>
